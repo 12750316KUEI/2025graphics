@@ -1,0 +1,127 @@
+//week15_6_postman_mouseDragged_poxX_posY_ID_angleX_ID_atan2
+PImage postman,head,body,uparm1,hand1,uparm2,hand2,foot1,foot2;
+void setup(){
+  size(560,560);
+  postman=loadImage("postman.png");
+  head=loadImage("head.png");
+  body=loadImage("body.png");
+  uparm1=loadImage("uparm1.png");
+  hand1=loadImage("hand1.png");
+  uparm2=loadImage("uparm2.png");
+  hand2=loadImage("hand2.png");
+  foot1=loadImage("foot1.png");
+  foot2=loadImage("foot2.png");
+}
+float [] angleX = new float[10];
+float [] angleY = new float[10];
+int ID=0;
+ArrayList<String> lines = new ArrayList<String>();
+void keyPressed(){
+  if(key=='s'){
+    String now = "";
+    for(int i=0;i<10;i++){
+      now += angleX[i]+" ";
+      now += angleY[i]+" ";
+  }
+  lines.add(now);
+  String[]arr=new String[lines.size()];
+  lines.toArray(arr);
+  saveStrings("angles.txt", arr);
+  println("現在存檔:" + now);
+  }
+  if(key=='r'){
+    String [] file = loadStrings("angles.txt");
+    if(file != null){
+      for(int i=0;i<file.length;i++){
+        lines.add(file[i]);
+          println("現在讀檔:" + file[i]);
+      }
+    }
+  }
+  if(key=='p') playing = !playing;
+  
+  if(key=='1') ID=1;//左手臂
+  if(key=='2') ID=2;//左手
+  if(key=='3') ID=3;//右手臂
+  if(key=='4') ID=4;//右手
+  if(key=='5') ID=5;//左腳
+  if(key=='6') ID=6;//右腳
+  if(key=='0') ID=0;//頭
+}
+boolean playing = false;
+float[] posX = {+236,185,116,290,357,220,260};
+float[] posY = {+210,261,265,262,259,375,372};
+float[] posAngle = {90,180,180,0,0,-90,-90};
+void mouseDragged(){
+  float dx = mouseX-posX[ID],dy = mouseY-posY[ID];
+  angleX[ID]=degrees(atan2(dy,dx))+posAngle[ID];
+  //angleX[ID]+=mouseX-pmouseX;
+  //angleY[ID]+=mouseY-pmouseY;
+}
+int R=0;
+void myInterpolate(){
+  if(lines.size()>=2){
+    float alpha = (frameCount%30)/30.0;
+    if(alpha==0.0) R=(R+1)%lines.size();
+    int R2=(R+1)%lines.size();
+    float [] oldAngle = float(split(lines.get(R),' '));
+    float [] newAngle = float(split(lines.get(R2),' '));
+    for(int i=0;i<10;i++){
+      angleX[i] = oldAngle[i*2+0]*(1-alpha) + newAngle[i*2+0]*alpha;
+      angleY[i] = oldAngle[i*2+1]*(1-alpha) + newAngle[i*2+1]*alpha;
+    }
+  }
+}
+void draw(){
+  background(#FFFFF2);
+  if(playing) myInterpolate();
+  
+  image(body,0,0);
+  
+  pushMatrix();
+    translate(+236,+210);//改
+    rotate(radians(angleX[0]));
+    translate(-232,-210);
+    image(head,0,0);
+  popMatrix();
+  
+   pushMatrix();//foot1
+    translate(220,375);
+    rotate(radians(angleX[5]));
+    translate(-220,-375);
+    image(foot1,0,0);
+  popMatrix();
+  
+  pushMatrix();//foot2
+    translate(260,372);
+    rotate(radians(angleX[6]));
+    translate(-260,-372);
+    image(foot2,0,0);
+  popMatrix();
+  
+  pushMatrix();
+    translate(185,261);
+    rotate(radians(angleX[1]));
+    translate(-185,-261);
+    image(uparm1,0,0);
+    pushMatrix();
+      translate(116,265);
+      rotate(radians(angleX[2]));
+      translate(-116,-265);
+      image(hand1,0,0);
+    popMatrix();
+  popMatrix();
+  
+  pushMatrix();
+    translate(290,262);
+    rotate(radians(angleX[3]));
+    translate(-290,-262);
+    image(uparm2,0,0);
+    pushMatrix();
+      translate(357,259);
+      rotate(radians(angleX[4]));
+      translate(-357,-259);
+      image(hand2,0,0);
+    popMatrix();
+  popMatrix();
+}
